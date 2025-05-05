@@ -33,7 +33,8 @@ DATASET:
   DIR:
     ### Server room 1 ###
     # The directory order may affect the performance due to sampling order
-    LIST_DIR: ['/mnt/ssd4tb1', '/mnt/ssd4tb2','/mnt/ssd4tb3','/mnt/ssd4tb4']
+    # LIST_DIR: ['/mnt/ssd4tb1', '/mnt/ssd4tb2','/mnt/ssd4tb3','/mnt/ssd4tb4']
+    LIST_DIR: ['/home/panding/K-RADAR/CLS']
     DIR_DOPPLER_CB:  # Total 2.2 TB
     DIR_SPARSE_CB: 
     ### Server room 1 ###
