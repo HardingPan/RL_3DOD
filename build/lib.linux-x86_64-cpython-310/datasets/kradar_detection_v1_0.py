@@ -755,17 +755,16 @@ class KRadarDetection_v1_0(Dataset):
         is_save_in_same_folder = self.cfg.DATASET.RDR_CUBE.GENERATE_SPARSE_CUBE.IS_SAVE_TO_SAME_SEQUENCE
         name_sparse_cube = self.cfg.DATASET.RDR_CUBE.GENERATE_SPARSE_CUBE.NAME_SPARSE_CUBE
         dir_save_seqs = self.cfg.DATASET.RDR_CUBE.GENERATE_SPARSE_CUBE.DIR_SAVE
-        # print(len(self))
+
         for idx_item in tqdm(range(len(self))):
-            # print(idx_item)
             dict_item = self[idx_item]
-            # print(dict_item)
+
             sparse_rdr_cube = self.get_sparse_rdr_cube_from_rdr_cube(dict_item)
             # print('* debug: total points = ', sparse_rdr_cube.shape)
             
             path_rdr_cube = dict_item['meta']['path']['rdr_cube']
             name_save_file = 'sp' + path_rdr_cube.split('/')[-1].split('.')[0]
-            # import pdb; pdb.set_trace()
+            import pdb; pdb.set_trace()
             if is_save_in_same_folder:
                 dir_save = os.path.join('/'.join(path_rdr_cube.split('/')[:-2]), name_sparse_cube)
             else: # default
@@ -969,7 +968,7 @@ if __name__ == '__main__':
     dataset = KRadarDetection_v1_0(cfg=cfg, split='train')
     
     ### Generating spcube ###
-    dataset.generate_sparse_rdr_cube()
+    # dataset.generate_sparse_rdr_cube()
     # dataset = KRadarDetection_v1_0(cfg=cfg, split='test')
     # dataset.generate_sparse_rdr_cube()
     ### Generating spcube ###

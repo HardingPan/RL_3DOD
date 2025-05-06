@@ -29,7 +29,7 @@ def write_version_to_file(version, target_file):
 
 if __name__ == '__main__':
     version = '0.3.0+%s' % get_git_commit_number()
-    write_version_to_file(version, 'ops/version.py')
+    # write_version_to_file(version, 'ops/version.py')
 
     setup(
         name='pcdet',

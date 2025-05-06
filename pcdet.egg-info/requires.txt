@@ -1,0 +1,10 @@
+numpy
+torch>=1.1
+spconv
+numba
+tensorboardX
+easydict
+pyyamlllvmlite
+scikit-image
+tqdm
+SharedArray

@@ -114,7 +114,7 @@ DATASET:
       NAME_SPARSE_CUBE: 'sp_rdr_cube'
       DIM: 4 # in [4, 5] / 5: x,y,z,pw,Doppler
       IS_SAVE_TO_SAME_SEQUENCE: False
-      DIR_SAVE: /home/panding/K-RADAR/CLS/1/spcube_outputs # '/media/oem/data_21/dir_sp_rdr_cube'
+      DIR_SAVE: # '/media/oem/data_21/dir_sp_rdr_cube'
 
       # Attributes of sp cube
       IS_ADD_HALF_GRID_OFFSET: True
@@ -167,9 +167,9 @@ DATASET:
 
   # List of items to be returned by the dataloader
   GET_ITEM: {
-    'rdr_sparse_cube'   : False,
+    'rdr_sparse_cube'   : True,
     'rdr_tesseract'     : False,
-    'rdr_cube'          : True,
+    'rdr_cube'          : False,
     'rdr_cube_doppler'  : False,
     'ldr_pc_64'         : True,
     'cam_front_img'     : True,
