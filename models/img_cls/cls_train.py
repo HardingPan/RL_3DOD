@@ -133,7 +133,9 @@ class ImgDataset(Dataset):
         path_header = path_label.split('/')[:-2]
         path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+camf_idx+'.png')
         
+        print(path_cam_front)
         image = cv2.imread(path_cam_front)[:,:1280]
+        
         label = self.cls_label_list[idx]
         
         if self.transform:

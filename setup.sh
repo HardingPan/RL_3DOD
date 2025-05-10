@@ -2,7 +2,7 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
 # 设置环境名称
-ENV_NAME="fusion"
+ENV_NAME="RL_3DOD"
 
 echo "Creating conda environment '$ENV_NAME' with Python 3.10..."
 conda create -y -n $ENV_NAME python=3.10
@@ -47,5 +47,5 @@ echo "conda activate $ENV_NAME"
 echo "Installed packages:"
 conda list
 
-cd /home/panding/RL_3DOD/utils/Rotated_IoU/cuda_op
-python setup.py install
+# cd RL_3DOD/utils/Rotated_IoU/cuda_op
+# python setup.py install

@@ -1,3 +1,5 @@
 # ninja log v5
 0	17172	1746535593644772382	/home/panding/RL_3DOD/utils/Rotated_IoU/cuda_op/build/temp.linux-x86_64-cpython-310/sort_vert_kernel.o	5a699ddad4af9393
 0	17746	1746535594224776402	/home/panding/RL_3DOD/utils/Rotated_IoU/cuda_op/build/temp.linux-x86_64-cpython-310/sort_vert.o	86f4f5f7c931874d
+11	21560	1746613225743392098	/home/pandingzd/RL_3DOD/utils/Rotated_IoU/cuda_op/build/temp.linux-x86_64-cpython-310/sort_vert.o	7af8f6c8e57e15b9
+12	21595	1746613225771392062	/home/pandingzd/RL_3DOD/utils/Rotated_IoU/cuda_op/build/temp.linux-x86_64-cpython-310/sort_vert_kernel.o	2b0a38b9e2cd17df
