@@ -5,11 +5,11 @@ LOG_FILE="/media/sdb2/K-Radar/process_$(date +%Y%m%d_%H%M%S).log"
 BASE_DIR="/media/sdb2/K-Radar"
 TARGET_DIR="/media/sdb2/K-Radar/kradar"
 
-# 创建一个 10GB ramdisk 作为临时解压目录
+# 创建一个 100GB ramdisk 作为临时解压目录
 RAMDISK="/mnt/ramdisk"
 if [ ! -d "$RAMDISK" ]; then
     sudo mkdir -p "$RAMDISK"
-    sudo mount -t tmpfs -o size=20g tmpfs "$RAMDISK"
+    sudo mount -t tmpfs -o size=1t tmpfs "$RAMDISK"
     sudo chmod 777 "$RAMDISK"
 fi
 
@@ -44,10 +44,10 @@ rsync_copy() {
 
 log "开始处理数据..."
 log "目标目录: $TARGET_DIR"
-log "使用 10GB ramdisk 作为临时目录: $RAMDISK"
+log "使用 100GB ramdisk 作为临时目录: $RAMDISK"
 
 # 处理1到58的文件夹
-for folder in $(seq 1 58); do
+for folder in $(seq 14 14); do
     FOLDER_PATH="$BASE_DIR/$folder"
     TARGET_FOLDER="$TARGET_DIR/$folder"
     TEMP_DIR="$RAMDISK/$folder"

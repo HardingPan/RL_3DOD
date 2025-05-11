@@ -133,8 +133,22 @@ class ImgDataset(Dataset):
         path_header = path_label.split('/')[:-2]
         path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+camf_idx+'.png')
         
-        print(path_cam_front)
-        image = cv2.imread(path_cam_front)[:,:1280]
+        # 检查文件是否存在
+        if not os.path.exists(path_cam_front):
+            print(f"文件不存在: {path_cam_front}")
+            path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+'00001'+'.png')
+            image = cv2.imread(path_cam_front)[:,:1280]
+            # # 创建替代图像
+            # img = np.zeros((900, 1600, 3), dtype=np.uint8)  # 使用适合你数据集的尺寸
+        else:
+            # 尝试读取图像
+            image = cv2.imread(path_cam_front)[:,:1280]
+            if image is None:
+                path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+'00001'+'.png')
+                image = cv2.imread(path_cam_front)[:,:1280]
+
+        
+        # image = cv2.imread(path_cam_front)
         
         label = self.cls_label_list[idx]
         
