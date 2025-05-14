@@ -12,10 +12,26 @@ import torch.optim as optim
 import os.path as osp
 import tqdm
 
-os.environ['CUDA_VISIBLE_DEVICES']= '0'
+os.environ['CUDA_VISIBLE_DEVICES']= '0, 1, 2, 3'
 
 """
 # source: https://github.com/open-mmlab/OpenPCDet/blob/1f5b7872b03e9e3d42801872bc59681ef36357b5/pcdet/config.py
+"""
+
+"""
+K-RADAR/
+├── 1/
+│   ├── info_label/
+│   │   └── *.txt
+│   ├── cam-front/
+│   │   └── cam-front_*.png
+│   └── description.txt
+├── 2/
+│   ├── info_label/
+│   │   └── *.txt
+│   ├── cam-front/
+│   │   └── cam-front_*.png
+│   └── description.txt
 """
 
 import yaml
@@ -69,17 +85,20 @@ class ImgDataset(Dataset):
         weather_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'lightsnow', 'heavysnow']
         for dir_seq in self.cfg.DATASET.DIR.LIST_DIR:
             list_seq = os.listdir(dir_seq)
+            # print(list_seq)
             for seq in list_seq:
                 seq_label_paths = sorted(glob(osp.join(dir_seq, seq, 'info_label', '*.txt')))
                 seq_label_paths = list(filter(lambda x: (x.split('/')[-1].split('.')[0] in self.dict_split[seq]), seq_label_paths))
                 self.list_path_label.extend(seq_label_paths)
                 
                 desc_path = osp.join(dir_seq, seq, 'description.txt')
+                # print('desc_path:', desc_path, dir_seq, seq)
                 f = open(desc_path, 'r')
                 desc = f.readlines()[0]
                 f.close()
                 weather = desc.split(',')[-1]
                 label = weather_list.index(weather)
+                # print('weather:', weather, label)
                 cls_label_list = cls_label_list + [label] * len(seq_label_paths)    
         self.cls_label_list = cls_label_list
         self.transform = transform
@@ -114,7 +133,23 @@ class ImgDataset(Dataset):
         path_header = path_label.split('/')[:-2]
         path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+camf_idx+'.png')
         
-        image = cv2.imread(path_cam_front)[:,:1280]
+        # 检查文件是否存在
+        if not os.path.exists(path_cam_front):
+            print(f"文件不存在: {path_cam_front}")
+            path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+'00001'+'.png')
+            image = cv2.imread(path_cam_front)[:,:1280]
+            # # 创建替代图像
+            # img = np.zeros((900, 1600, 3), dtype=np.uint8)  # 使用适合你数据集的尺寸
+        else:
+            # 尝试读取图像
+            image = cv2.imread(path_cam_front)[:,:1280]
+            if image is None:
+                path_cam_front = '/'+os.path.join(*path_header, 'cam-front', 'cam-front_'+'00001'+'.png')
+                image = cv2.imread(path_cam_front)[:,:1280]
+
+        
+        # image = cv2.imread(path_cam_front)
+        
         label = self.cls_label_list[idx]
         
         if self.transform:
@@ -123,43 +158,74 @@ class ImgDataset(Dataset):
         return image, label, path_cam_front
 
     def __len__(self):
-        return len(self.cls_label_list)  
-    
-    
+        return len(self.cls_label_list)
+
 network = ImageClsBackbone()
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+if torch.cuda.device_count() > 1:
+    print(f"Let's use {torch.cuda.device_count()} GPUs!")
+    network = nn.DataParallel(network)
+
 network.to(device)
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 path_cfg = './configs/cfg_rl_3df_gate.yml'
+trainset = ImgDataset(path_cfg=path_cfg, split='train', transform=transform)
 testset = ImgDataset(path_cfg=path_cfg, split='test', transform=transform)
-print(testset.__len__())
+print(trainset.__len__(), testset.__len__())
 
-batch_size=1
+batch_size = 16
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                          shuffle=True, num_workers=2)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                          shuffle=False, num_workers=2)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
 weather_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'light snow', 'heavy snow']
 
-best_pth = './models/img_cls/best045_91.pth'
-network.load_state_dict(torch.load(best_pth))
-network.eval()
-
-
-corr_total = np.zeros((8, 2)) # correct, total
-network.eval()
-with torch.no_grad():
-    for data in tqdm.tqdm(testloader):
-        image, label, path_cam_front = data
+best_acc = 0
+for epoch in range(100):
+    running_loss = 0.0
+    network.train()
+    for i, data in tqdm.tqdm(enumerate(trainloader, 0)):
         image, label = data[0].to(device), data[1].to(device)
         dict_item = dict()
         dict_item['cam_front_img'] = image
-        
+
+        optimizer.zero_grad()
         outputs = network(dict_item)
-        _, predicted = torch.max(outputs['img_cls_output'].data, 0)
-        corr_total[0, 1] += label.size(0)
-        corr_total[label.item()+1, 1] += label.size()
-        corr_total[0, 0] += (predicted == label).sum().item()
-        corr_total[label.item()+1, 0] += (predicted == label).sum().item()
-print(corr_total)
+        loss = criterion(outputs['img_cls_output'], label)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        if i % 100 == 99:
+            print(f'[{epoch}, {i + 1:5d}] loss: {running_loss:.3f}')
+            running_loss = 0.0
+
+    correct = 0
+    total = 0
+    network.eval()
+    with torch.no_grad():
+        for data in tqdm.tqdm(testloader):
+            image, label, path_cam_front = data
+            image, label = data[0].to(device), data[1].to(device)
+            dict_item = dict()
+            dict_item['cam_front_img'] = image
+            outputs = network(dict_item)
+            _, predicted = torch.max(outputs['img_cls_output'].data, 1)
+            total += label.size(0)
+            correct += (predicted == label).sum().item()
+    acc = correct / total
+
+    if acc > best_acc:
+        torch.save(network.state_dict(), 
+                   './models/img_cls/best' + str(epoch).zfill(3) + '_' + str(acc*100).split('.')[0] + '.pth')
+        print('epoch, best acc: ' + str(epoch).zfill(3) + '_' + str(acc))
+        best_acc = acc
+    else:
+        print('epoch, acc: ' + str(epoch).zfill(3) + '_' + str(acc))

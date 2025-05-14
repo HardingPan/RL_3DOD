@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置日志文件
-LOG_FILE="/media/sdb2/K-Radar/process_$(date +%Y%m%d_%H%M%S).log"
+LOG_FILE="/media/sdb2/K-Radar/lpc_process_$(date +%Y%m%d_%H%M%S).log"
 BASE_DIR="/media/sdb2/K-Radar"
 TARGET_DIR="/media/sdb2/K-Radar/kradar"
 
@@ -42,12 +42,12 @@ rsync_copy() {
     fi
 }
 
-log "开始处理数据..."
+log "开始处理LPC数据..."
 log "目标目录: $TARGET_DIR"
 log "使用 1TB ramdisk 作为临时目录: $RAMDISK"
 
 # 处理1到58的文件夹
-for folder in $(seq 1 1); do
+for folder in $(seq 1 58); do
     FOLDER_PATH="$BASE_DIR/$folder"
     TARGET_FOLDER="$TARGET_DIR/$folder"
     TEMP_DIR="$RAMDISK/$folder"
@@ -63,38 +63,41 @@ for folder in $(seq 1 1); do
     clean_dir "$TEMP_DIR"
     mkdir -p "$TEMP_DIR"
     mkdir -p "$TARGET_FOLDER"
-
-    # 处理 {}_rt 文件夹或压缩包
-    RT_FOLDER="${FOLDER_PATH}/${folder}_rt"
-    RT_ZIP=$(find "$FOLDER_PATH" -name "${folder}_rt*.zip" -type f | head -n 1)
     
-    if [ -d "$RT_FOLDER" ]; then
-        log "找到已解压的rt文件夹 $RT_FOLDER"
-        if [ -d "${RT_FOLDER}/radar_zyx_cube" ]; then
-            log "使用rsync复制 radar_zyx_cube 文件夹..."
-            rsync_copy "${RT_FOLDER}/radar_zyx_cube/" "$TARGET_FOLDER/radar_zyx_cube/"
+    # 处理 LPC 文件夹或压缩包
+    LPC_FOLDER="${FOLDER_PATH}/${folder}_lpc"
+    LPC_ZIP=$(find "$FOLDER_PATH" -name "${folder}_lpc*.zip" -type f | head -n 1)
+    
+    if [ -d "$LPC_FOLDER" ]; then
+        log "找到已解压的lpc文件夹 $LPC_FOLDER"
+        # 查找os2-64文件夹
+        OS2_64_FOLDER=$(find "$LPC_FOLDER" -name "os2-64" -type d | head -n 1)
+        
+        if [ -n "$OS2_64_FOLDER" ]; then
+            log "使用rsync复制 os2-64 文件夹..."
+            rsync_copy "$OS2_64_FOLDER/" "$TARGET_FOLDER/os2-64/"
         else
-            log "警告: ${RT_FOLDER}/radar_zyx_cube 不存在"
+            log "警告: 未在 $LPC_FOLDER 中找到 os2-64 文件夹"
         fi
-    elif [ -n "$RT_ZIP" ]; then
-        log "找到rt压缩包 $RT_ZIP，解压中..."
+    elif [ -n "$LPC_ZIP" ]; then
+        log "找到lpc压缩包 $LPC_ZIP，解压中..."
         # 使用 ramdisk 作为临时解压目录
-        unzip -q "$RT_ZIP" -d "$TEMP_DIR/rt"
+        unzip -q "$LPC_ZIP" -d "$TEMP_DIR/lpc"
         
-        # 寻找 radar_zyx_cube 文件夹
-        RADAR_CUBE=$(find "$TEMP_DIR/rt" -name "radar_zyx_cube" -type d | head -n 1)
+        # 寻找 os2-64 文件夹
+        OS2_64_FOLDER=$(find "$TEMP_DIR/lpc" -name "os2-64" -type d | head -n 1)
         
-        if [ -n "$RADAR_CUBE" ]; then
-            log "使用rsync复制 radar_zyx_cube 文件夹..."
-            rsync_copy "$RADAR_CUBE/" "$TARGET_FOLDER/radar_zyx_cube/"
+        if [ -n "$OS2_64_FOLDER" ]; then
+            log "使用rsync复制 os2-64 文件夹..."
+            rsync_copy "$OS2_64_FOLDER/" "$TARGET_FOLDER/os2-64/"
         else
-            log "警告: 在解压的rt压缩包中未找到 radar_zyx_cube 文件夹"
+            log "警告: 在解压的lpc压缩包中未找到 os2-64 文件夹"
         fi
         
-        log "清理临时rt文件..."
-        clean_dir "$TEMP_DIR/rt"
+        log "清理临时lpc文件..."
+        clean_dir "$TEMP_DIR/lpc"
     else
-        log "警告: 未找到 ${folder}_rt 文件夹或压缩包"
+        log "警告: 未找到 ${folder}_lpc 文件夹或压缩包"
     fi
     
     log "完成处理文件夹 $folder"
@@ -106,7 +109,7 @@ done
 # 清理临时目录
 clean_dir "$RAMDISK"
 
-log "所有数据处理完成!"
+log "所有LPC数据处理完成!"
 
 # 显示结果统计
 PROCESSED_FOLDERS=$(find "$TARGET_DIR" -mindepth 1 -maxdepth 1 -type d | wc -l)

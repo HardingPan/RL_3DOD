@@ -85,20 +85,20 @@ class ImgDataset(Dataset):
         weather_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'lightsnow', 'heavysnow']
         for dir_seq in self.cfg.DATASET.DIR.LIST_DIR:
             list_seq = os.listdir(dir_seq)
-            print(list_seq)
+            # print(list_seq)
             for seq in list_seq:
                 seq_label_paths = sorted(glob(osp.join(dir_seq, seq, 'info_label', '*.txt')))
                 seq_label_paths = list(filter(lambda x: (x.split('/')[-1].split('.')[0] in self.dict_split[seq]), seq_label_paths))
                 self.list_path_label.extend(seq_label_paths)
                 
                 desc_path = osp.join(dir_seq, seq, 'description.txt')
-                print('desc_path:', desc_path, dir_seq, seq)
+                # print('desc_path:', desc_path, dir_seq, seq)
                 f = open(desc_path, 'r')
                 desc = f.readlines()[0]
                 f.close()
                 weather = desc.split(',')[-1]
                 label = weather_list.index(weather)
-                print('weather:', weather, label)
+                # print('weather:', weather, label)
                 cls_label_list = cls_label_list + [label] * len(seq_label_paths)    
         self.cls_label_list = cls_label_list
         self.transform = transform
@@ -162,6 +162,7 @@ class ImgDataset(Dataset):
 
 network = ImageClsBackbone()
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
 network.to(device)
 
 transform = transforms.Compose(

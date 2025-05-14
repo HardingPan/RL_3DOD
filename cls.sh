@@ -47,7 +47,7 @@ log "目标目录: $TARGET_DIR"
 log "使用 100GB ramdisk 作为临时目录: $RAMDISK"
 
 # 处理1到58的文件夹
-for folder in $(seq 14 14); do
+for folder in $(seq 13 13); do
     FOLDER_PATH="$BASE_DIR/$folder"
     TARGET_FOLDER="$TARGET_DIR/$folder"
     TEMP_DIR="$RAMDISK/$folder"
