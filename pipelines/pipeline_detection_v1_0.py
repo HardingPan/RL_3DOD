@@ -664,7 +664,7 @@ class PipelineDetection_v1_0():
             weather_cond_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'lightsnow', 'heavysnow']
 
             ### Check is_validate with small dataset ###
-            print(self.dataset_test, "11111111111111111")
+            # print(self.dataset_test, "11111111111111111")
             if is_subset:
                 is_shuffle = False
                 minival_id = list(range(0, 17500, 10)) # num:1750
@@ -795,7 +795,7 @@ class PipelineDetection_v1_0():
 
                 try:
                     if dict_datum is None:
-                        print("1111111111111111111111111111")
+                        print("dict_datum is None")
                     dict_out = self.network(dict_datum) # inference
                     is_feature_inferenced = True
                 except:
