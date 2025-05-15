@@ -18,6 +18,7 @@ from scipy.io import loadmat # from matlab
 from glob import glob
 from tqdm import tqdm
 import cv2
+import matplotlib.pyplot as plt
 
 # For executing the '__main__' directly
 try:
@@ -563,7 +564,7 @@ class KRadarDetection_v1_0(Dataset):
             cls_name, idx_cls, [x,y,z,theta,l,w,h], idx_obj = obj
             bboxes_o3d.append(Object3D(x, y, z, l, w, h, theta))
 
-            colors_bbox = [self.cfg.VIS.DIC_CLASS_RGB[cls_name] for _ in range(len(lines))]
+            colors_bbox = [self.cfg.VIS.CLASS_RGB[cls_name] for _ in range(len(lines))]
             list_colors_bbox.append(colors_bbox)
 
         line_sets_bbox = []
@@ -673,7 +674,82 @@ class KRadarDetection_v1_0(Dataset):
             inlier_cloud.paint_uniform_color([0., 0., 0.])
             list_vis = list_pcd + [inlier_cloud, outlier_cloud]
 
-        o3d.visualization.draw_geometries(list_vis)
+        try:
+            # 尝试使用可视化窗口
+            vis = o3d.visualization.Visualizer()
+            if vis.create_window(visible=False):
+                for geom in list_vis:
+                    vis.add_geometry(geom)
+
+                # 设置相机参数
+                ctr = vis.get_view_control()
+                ctr.set_zoom(0.8)
+                vis.update_renderer()
+
+                # 捕获图像并保存
+                image = vis.capture_screen_float_buffer(True)
+                plt.imsave("visualization_result.png", np.asarray(image))
+                vis.destroy_window()
+                print("Visualization saved to visualization_result.png")
+            else:
+                print("无法创建可视化窗口，尝试使用替代方法...")
+                self._save_using_matplotlib(list_vis, "visualization_result.png")
+        except Exception as e:
+            print(f"可视化过程中出现错误: {e}")
+            print("尝试使用替代方法...")
+            self._save_using_matplotlib(list_vis, "visualization_result.png")
+
+    def _save_using_matplotlib(self, geometries, filename):
+        """
+        使用matplotlib保存点云数据的替代方法
+        """
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # 设置视角
+        ax.view_init(elev=30, azim=45)
+        
+        # 遍历所有几何体
+        for geom in geometries:
+            if isinstance(geom, o3d.geometry.PointCloud):
+                # 提取点云数据
+                points = np.asarray(geom.points)
+                colors = np.asarray(geom.colors)
+                
+                if len(points) > 0:
+                    if len(colors) == len(points):
+                        # 使用点云的颜色
+                        ax.scatter(points[:, 0], points[:, 1], points[:, 2], 
+                                c=colors, s=1, marker='.')
+                    else:
+                        # 使用默认颜色
+                        ax.scatter(points[:, 0], points[:, 1], points[:, 2], 
+                                s=1, marker='.')
+                                
+            elif isinstance(geom, o3d.geometry.LineSet):
+                lines = np.asarray(geom.lines)
+                points = np.asarray(geom.points)
+                
+                for line in lines:
+                    start, end = line
+                    ax.plot([points[start, 0], points[end, 0]],
+                            [points[start, 1], points[end, 1]],
+                            [points[start, 2], points[end, 2]], 'b-')
+        
+        # 设置轴标签
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        
+        # 保存图像
+        plt.tight_layout()
+        plt.savefig(filename, dpi=300)
+        plt.close()
+        print(f"使用Matplotlib保存可视化结果到 {filename}")
+        
     ### Radar Cube ### (TBD: Update to main_vis.py version)
     
     ### Generate sparse rdr cube ###
@@ -807,8 +883,9 @@ class KRadarDetection_v1_0(Dataset):
                 path_radar_sparse_cube = os.path.join(self.dir_sp, path_header[-1], self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
             else:
                 # path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
-                path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'cube_'+radar_idx+'.npy')
-
+                path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
+        # print(path_radar_sparse_cube)
+        
         ### Folders in seq.zip file
         path_radar_tesseract = '/'+os.path.join(*path_header, 'radar_tesseract', 'tesseract_'+radar_idx+'.mat')
         path_radar_cube = '/'+os.path.join(*path_header, 'radar_zyx_cube', 'cube_'+radar_idx+'.mat')
@@ -969,7 +1046,7 @@ if __name__ == '__main__':
     dataset = KRadarDetection_v1_0(cfg=cfg, split='train')
     
     ### Generating spcube ###
-    dataset.generate_sparse_rdr_cube()
+    # dataset.generate_sparse_rdr_cube()
     # dataset = KRadarDetection_v1_0(cfg=cfg, split='test')
     # dataset.generate_sparse_rdr_cube()
     ### Generating spcube ###

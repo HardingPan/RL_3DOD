@@ -36,7 +36,7 @@ DATASET:
     # LIST_DIR: ['/mnt/ssd4tb1', '/mnt/ssd4tb2','/mnt/ssd4tb3','/mnt/ssd4tb4']
     LIST_DIR: ['/media/sdb2/K-Radar/minikradar']
     DIR_DOPPLER_CB:  # Total 2.2 TB
-    DIR_SPARSE_CB: '/media/sdb2/K-Radar/sparse_cube'
+    DIR_SPARSE_CB: '/media/sdb2/K-Radar/minikradar/rdr_sparse_cube'
     ### Server room 1 ###
 
     ### Lab server 1 ###
@@ -239,8 +239,8 @@ OPTIMIZER: # Training
   WEIGHT_DECAY: 0.01
   MOMENTUM: 0.9
 
-  BATCH_SIZE: 2
-  NUM_WORKERS: 2 # 0 for dataloader_error / 4 for batch 16
+  BATCH_SIZE: 4
+  NUM_WORKERS: 4 # 0 for dataloader_error / 4 for batch 16
 
   MAX_EPOCH: 20
   
