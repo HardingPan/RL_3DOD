@@ -7,7 +7,9 @@
 import torch
 import torch.nn as nn
 import numpy as np
-import nms
+# from nms import nms
+# from utils.kitti_eval import nms_gpu
+from utils.kitti_eval import nms
 import time
 
 from utils.Rotated_IoU.oriented_iou_loss import cal_iou
@@ -379,7 +381,21 @@ class RdrSpcubeHead(nn.Module):
                 list_tuple_for_nms = [[a, b, c] for (a, b, c) in zip(c_list, dim_list, angle_list)]
                 conf_score = pred_reg_bbox_with_conf[:, 0:1].cpu().detach().numpy()
 
+                
+                # print("[DEBUG] type(conf_score):", type(conf_score))
+                # print("[DEBUG] conf_score example:", conf_score[:5])
+                # print("[DEBUG] list_tuple_for_nms sample[0]:", list_tuple_for_nms[0])
+                # print("[DEBUG] list_tuple_for_nms shape info:", len(list_tuple_for_nms), len(list_tuple_for_nms[0]))
+
+                # 展平 box 格式
+                list_tuple_for_nms = [
+                    [a[0], a[1], b[0], b[1], c]
+                    for (a, b, c) in list_tuple_for_nms
+                ]
+                conf_score = conf_score.flatten()
+            
                 indices = nms.rboxes(list_tuple_for_nms, conf_score, nms_threshold=self.nms_thr) # nms_usage
+                
                 pred_reg_bbox_with_conf = pred_reg_bbox_with_conf[indices]
                 cls_id_per_anc = cls_id_per_anc[indices]
 
