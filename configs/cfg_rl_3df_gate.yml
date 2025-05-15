@@ -36,7 +36,7 @@ DATASET:
     # LIST_DIR: ['/mnt/ssd4tb1', '/mnt/ssd4tb2','/mnt/ssd4tb3','/mnt/ssd4tb4']
     LIST_DIR: ['/media/sdb2/K-Radar/minikradar']
     DIR_DOPPLER_CB:  # Total 2.2 TB
-    DIR_SPARSE_CB: '/media/sdb2/K-Radar/sparse_cube'
+    DIR_SPARSE_CB: '/media/sdb2/K-Radar/minikradar'
     ### Server room 1 ###
 
     ### Lab server 1 ###
@@ -114,7 +114,7 @@ DATASET:
       NAME_SPARSE_CUBE: 'sp_rdr_cube'
       DIM: 4 # in [4, 5] / 5: x,y,z,pw,Doppler
       IS_SAVE_TO_SAME_SEQUENCE: False
-      DIR_SAVE: /media/sdb2/K-Radar/minikradar/sp # '/media/oem/data_21/dir_sp_rdr_cube'
+      # DIR_SAVE: /media/sdb2/K-Radar/minikradar/sp # '/media/oem/data_21/dir_sp_rdr_cube'
 
       # Attributes of sp cube
       IS_ADD_HALF_GRID_OFFSET: True
@@ -240,7 +240,7 @@ OPTIMIZER: # Training
   MOMENTUM: 0.9
 
   BATCH_SIZE: 2
-  NUM_WORKERS: 2 # 0 for dataloader_error / 4 for batch 16
+  NUM_WORKERS: 0 # 0 for dataloader_error / 4 for batch 16
 
   MAX_EPOCH: 20
   
@@ -250,10 +250,11 @@ OPTIMIZER: # Training
 
 ### ----- Validation ----- ###
 VAL:
-  IS_VALIDATE: True
+  IS_VALIDATE: False
   IS_CONSIDER_VAL_SUBSET: True
   VAL_PER_EPOCH_SUBSET: 1
   NUM_SUBSET: 5834
+  # NUM_SUBSET: 100
   VAL_PER_EPOCH_FULL: 100 # epoch for validate full dataset
 
   TRAIN_AUG: False

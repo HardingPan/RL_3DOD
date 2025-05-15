@@ -1,10 +1,13 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 from pipelines.pipeline_detection_v1_0 import PipelineDetection_v1_0
 
-EXP_NAME = ''
+EXP_NAME = 'exp_250515_152355_RL_3df_gate'
 MODEL_EPOCH = 0
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 if __name__ == '__main__':
     PATH_CONFIG = f'./logs/{EXP_NAME}/config.yml'

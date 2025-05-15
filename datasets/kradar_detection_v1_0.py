@@ -833,9 +833,9 @@ class KRadarDetection_v1_0(Dataset):
         dir_save_seqs = self.cfg.DATASET.RDR_CUBE.GENERATE_SPARSE_CUBE.DIR_SAVE
         # print(len(self))
         for idx_item in tqdm(range(len(self))):
-            # print(idx_item)
+            print(idx_item)
             dict_item = self[idx_item]
-            # print(dict_item)
+            print(dict_item)
             sparse_rdr_cube = self.get_sparse_rdr_cube_from_rdr_cube(dict_item)
             # print('* debug: total points = ', sparse_rdr_cube.shape)
             
@@ -880,10 +880,10 @@ class KRadarDetection_v1_0(Dataset):
         path_radar_sparse_cube = None
         if self.is_get_sparse_cube:
             if self.is_sp_another_dir:
-                path_radar_sparse_cube = os.path.join(self.dir_sp, path_header[-1], self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
+                path_radar_sparse_cube = os.path.join(self.dir_sp, path_header[-1], self.name_sp_cube, 'cube_'+radar_idx+'.npy')
             else:
                 # path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
-                path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'spcube_'+radar_idx+'.npy')
+                path_radar_sparse_cube = '/'+os.path.join(*path_header, self.name_sp_cube, 'cube_'+radar_idx+'.npy')
         # print(path_radar_sparse_cube)
         
         ### Folders in seq.zip file
@@ -957,9 +957,15 @@ class KRadarDetection_v1_0(Dataset):
                 dict_item['cam_front_img'] = self.get_img(dict_path['cam_front_img'])
             ### Get only required data ###
             return dict_item
-        except:
-            print('* Exception error (Dataset): __getitem__ error')
+        # except:
+            # print('* Exception error (Dataset): __getitem__ error')
+            # return None
+        except Exception as e:
+            print(f'* Exception error (Dataset): __getitem__ error at index {idx}')
+            print(f'  -> path_label: {path_label if self.type_item == 1 else "dict"}')
+            print(f'  -> Error: {str(e)}')
             return None
+
 
     def get_img(self, img_path):
         img = cv2.imread(img_path)[:, :1280]

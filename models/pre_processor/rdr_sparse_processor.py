@@ -30,6 +30,7 @@ class RadarSparseProcessor(nn.Module):
 
     def forward(self, dict_item):
         if self.type_data == 0:
+            # print(dict_item)
             sp_cube = dict_item['rdr_sparse_cube'].cuda()
             B, N, C = sp_cube.shape
             list_batch_indices = []

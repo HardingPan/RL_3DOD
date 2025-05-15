@@ -74,6 +74,7 @@ class PipelineDetection_v1_0():
         if self.cfg.GENERAL.LOGGING.IS_LOGGING:
             self.set_logging(path_cfg)
 
+        print("IS_VALIDAT: ", self.cfg.VAL.IS_VALIDATE)
         # Validation
         if self.cfg.VAL.IS_VALIDATE:
             self.set_validate()
@@ -117,6 +118,7 @@ class PipelineDetection_v1_0():
         self.is_consider_subset = self.cfg.VAL.IS_CONSIDER_VAL_SUBSET
         self.val_per_epoch_subset = self.cfg.VAL.VAL_PER_EPOCH_SUBSET
         self.val_num_subset = self.cfg.VAL.NUM_SUBSET
+        # print(f'* Validation subset num = {self.val_num_subset}')
         self.val_per_epoch_full = self.cfg.VAL.VAL_PER_EPOCH_FULL
 
         self.val_keyword = self.cfg.VAL.CLASS_VAL_KEYWORD # for kitti_eval
@@ -335,7 +337,7 @@ class PipelineDetection_v1_0():
         self.network.load_state_dict(pt_dict_model, strict=is_strict)
 
     # V2
-    def vis_infer(self, sample_indices, conf_thr=0.7, is_nms=True, vis_mode=['lpc', 'spcube', 'cube'], is_train=False):
+    def vis_infer(self, sample_indices, conf_thr=0.7, is_nms=True, vis_mode=['lpc', 'cube', 'cube'], is_train=False):
         '''
         * sample_indices: e.g. [0, 1, 2, 3, 4]
         * assume batch_size = 1 for convenience
@@ -662,6 +664,7 @@ class PipelineDetection_v1_0():
             weather_cond_list = ['normal', 'overcast', 'fog', 'rain', 'sleet', 'lightsnow', 'heavysnow']
 
             ### Check is_validate with small dataset ###
+            print(self.dataset_test, "11111111111111111")
             if is_subset:
                 is_shuffle = False
                 minival_id = list(range(0, 17500, 10)) # num:1750
@@ -677,6 +680,15 @@ class PipelineDetection_v1_0():
                 data_loader = torch.utils.data.DataLoader(self.dataset_test, \
                         batch_size = 1, shuffle = is_shuffle, collate_fn = self.dataset_test.collate_fn, \
                         num_workers = self.cfg.OPTIMIZER.NUM_WORKERS)
+                print(f"[INFO] Total samples in dataset_test: {len(self.dataset_test)}")
+                try:
+                    item = next(iter(data_loader))
+                    print("[INFO] First batch loaded from DataLoader.")
+                except StopIteration:
+                    print("[ERROR] DataLoader is empty during iteration.")
+                except Exception as e:
+                    print("[ERROR] Failed to load from DataLoader:", str(e))
+
             
             if epoch is None:
                 dir_epoch = 'none'
@@ -782,6 +794,8 @@ class PipelineDetection_v1_0():
                     torch.cuda.empty_cache()
 
                 try:
+                    if dict_datum is None:
+                        print("1111111111111111111111111111")
                     dict_out = self.network(dict_datum) # inference
                     is_feature_inferenced = True
                 except:
